@@ -1,9 +1,6 @@
 package sk.tomsik68.oneclickmc;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
-
 import javax.swing.JOptionPane;
 
 import net.minidev.json.JSONObject;
@@ -27,6 +24,7 @@ public class GameLauncher implements IObserver<IVersion> {
     private String lastRelease;
     private IVersion lastVersion;
     private final IProfileIO profileIO;
+    private VersionDownloadThread versionDownloadThread;
 
     public GameLauncher() {
         profileIO = new YDProfileIO(Platform.getCurrentPlatform().getWorkingDirectory());
@@ -40,7 +38,7 @@ public class GameLauncher implements IObserver<IVersion> {
     }
 
     public void downloadVersions() {
-        VersionDownloadThread versionDownloadThread = new VersionDownloadThread();
+        versionDownloadThread = new VersionDownloadThread();
         versionDownloadThread.addObserver(this);
 
         try {
@@ -82,6 +80,8 @@ public class GameLauncher implements IObserver<IVersion> {
     }
 
     public void play(int profile) throws Exception {
+        // wait for the thread to download neccessary information
+        while(versionDownloadThread.isAlive() && lastVersion == null){}
         ProgressDialog pd = new ProgressDialog();
         pd.setVisible(true);
         pd.setMessage("Logging in...");
@@ -90,6 +90,7 @@ public class GameLauncher implements IObserver<IVersion> {
 
         ISession session = doLogin(profile);
         pd.setMessage("Checking for updates...");
+        System.out.println("Installing "+lastVersion);
         lastVersion.getInstaller().install(lastVersion, mc, pd);
 
         Process proc = lastVersion.getLauncher().launch(session, mc, null, lastVersion, new DefaultLaunchSettings());
