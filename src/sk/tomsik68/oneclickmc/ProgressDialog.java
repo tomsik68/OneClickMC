@@ -9,7 +9,7 @@ import javax.swing.JProgressBar;
 
 import sk.tomsik68.mclauncher.api.ui.IProgressMonitor;
 
-public class ProgressDialog extends JDialog implements IProgressMonitor {
+public class ProgressDialog extends JDialog {
     private static final long serialVersionUID = 1L;
     private final JProgressBar progressBar;
     private final JLabel lbProgReport;
@@ -19,7 +19,8 @@ public class ProgressDialog extends JDialog implements IProgressMonitor {
         setLayout(new BorderLayout());
         add(lbProgReport = new JLabel("                                       "), BorderLayout.NORTH);
         add(progressBar = new JProgressBar(), BorderLayout.CENTER);
-        centerFrame(200,60);
+        progressBar.setIndeterminate(true);
+        centerFrame(200, 60);
     }
 
     private void centerFrame(int targetW, int targetH) {
@@ -29,26 +30,8 @@ public class ProgressDialog extends JDialog implements IProgressMonitor {
 
     public void setMessage(String message) {
         lbProgReport.setText(message);
+        repaint();
     }
-
-    @Override
-    public void setProgress(int paramInt) {
-        progressBar.setValue(paramInt);
-    }
-
-    @Override
-    public void setMax(int paramInt) {
-        progressBar.setMaximum(paramInt);
-    }
-
-    @Override
-    public void incrementProgress(int paramInt) {
-        setProgress(progressBar.getValue() + paramInt);
-    }
-
-    @Override
-    public void finish() {
-        setVisible(false);
-    }
+    
 
 }
