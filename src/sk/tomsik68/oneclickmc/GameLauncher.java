@@ -3,26 +3,30 @@ package sk.tomsik68.oneclickmc;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
+import sk.tomsik68.mclauncher.api.common.ILaunchSettings;
 import sk.tomsik68.mclauncher.api.common.IObservable;
 import sk.tomsik68.mclauncher.api.common.IObserver;
 import sk.tomsik68.mclauncher.api.common.MCLauncherAPI;
+import sk.tomsik68.mclauncher.api.common.mc.MinecraftInstance;
 import sk.tomsik68.mclauncher.api.login.IProfile;
 import sk.tomsik68.mclauncher.api.login.IProfileIO;
 import sk.tomsik68.mclauncher.api.login.ISession;
 import sk.tomsik68.mclauncher.api.versions.IVersion;
 import sk.tomsik68.mclauncher.impl.common.Platform;
-import sk.tomsik68.mclauncher.impl.common.mc.MinecraftInstance;
 import sk.tomsik68.mclauncher.impl.login.legacy.LegacyProfile;
 import sk.tomsik68.mclauncher.impl.login.yggdrasil.YDLoginService;
-import sk.tomsik68.mclauncher.impl.login.yggdrasil.io.YDProfileIO;
+import sk.tomsik68.mclauncher.impl.login.yggdrasil.YDProfileIO;
+import sk.tomsik68.mclauncher.impl.versions.mcdownload.MCDownloadVersionList;
 import sk.tomsik68.mclauncher.util.HttpUtils;
 
-public class GameLauncher implements IObserver<IVersion> {
+public class GameLauncher implements IObserver<String> {
     private String lastRelease;
     private IVersion lastVersion;
     private final IProfileIO profileIO;
@@ -34,9 +38,13 @@ public class GameLauncher implements IObserver<IVersion> {
     }
 
     @Override
-    public void onUpdate(IObservable<IVersion> arg0, IVersion arg1) {
-        if (arg1.getUniqueID().equalsIgnoreCase("r".concat(lastRelease))) {
-            lastVersion = arg1;
+    public void onUpdate(IObservable<String> arg0, String id) {
+        if (id.equalsIgnoreCase(lastRelease)) {
+            try {
+                lastVersion = versionDownloadThread.getList().retrieveVersionInfo(id);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
@@ -45,7 +53,7 @@ public class GameLauncher implements IObserver<IVersion> {
         versionDownloadThread.addObserver(this);
 
         try {
-            JSONObject versions = (JSONObject) JSONValue.parse(HttpUtils.httpGet(MCLauncherAPI.URLS.JSONVERSION_LIST_URL));
+            JSONObject versions = (JSONObject) JSONValue.parse(HttpUtils.httpGet("https://s3.amazonaws.com/Minecraft.Download/versions/versions.json"));
             JSONObject latestObject = (JSONObject) versions.get("latest");
             lastRelease = latestObject.get("release").toString();
         } catch (Exception e) {
@@ -96,7 +104,10 @@ public class GameLauncher implements IObserver<IVersion> {
         progressDialog.setMessage("Installing MineCraft " + lastVersion.getDisplayName());
         lastVersion.getInstaller().install(lastVersion, mc, null);
         progressDialog.setMessage("Launching...");
-        Process proc = lastVersion.getLauncher().launch(session, mc, null, lastVersion, new DefaultLaunchSettings());
+        List<String> launchCommand = lastVersion.getLauncher().getLaunchCommand(session, mc, null, lastVersion, new DefaultLaunchSettings(), null);
+        ProcessBuilder pb = new ProcessBuilder(launchCommand);
+        pb.redirectErrorStream(true);
+        Process proc = pb.start();
 
         BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
         while (isProcessAlive(proc)) {

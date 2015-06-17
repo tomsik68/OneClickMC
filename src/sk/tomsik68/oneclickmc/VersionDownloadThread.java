@@ -5,7 +5,7 @@ import sk.tomsik68.mclauncher.api.common.IObserver;
 import sk.tomsik68.mclauncher.api.versions.IVersion;
 import sk.tomsik68.mclauncher.impl.versions.mcdownload.MCDownloadVersionList;
 
-public class VersionDownloadThread extends Thread implements IObservable<IVersion> {
+public class VersionDownloadThread extends Thread implements IObservable<String> {
     private final MCDownloadVersionList list = new MCDownloadVersionList();
 
     public VersionDownloadThread() {
@@ -21,18 +21,21 @@ public class VersionDownloadThread extends Thread implements IObservable<IVersio
     }
 
     @Override
-    public void addObserver(IObserver<IVersion> arg0) {
+    public void addObserver(IObserver<String> arg0) {
         list.addObserver(arg0);
     }
 
     @Override
-    public void deleteObserver(IObserver<IVersion> arg0) {
+    public void deleteObserver(IObserver<String> arg0) {
         list.deleteObserver(arg0);
     }
 
     @Override
-    public void notifyObservers(IVersion arg0) {
+    public void notifyObservers(String arg0) {
         throw new IllegalStateException("This is impossible.");
     }
 
+    public MCDownloadVersionList getList(){
+        return list;
+    }
 }
