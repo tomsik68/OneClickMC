@@ -35,7 +35,6 @@ public class OneClickMCMainFrame extends JFrame implements ActionListener {
 
     public static void main(String[] args) {
         GameLauncher launcher = new GameLauncher();
-        launcher.downloadVersions();
         instance = new OneClickMCMainFrame(launcher);
         instance.setVisible(true);
     }

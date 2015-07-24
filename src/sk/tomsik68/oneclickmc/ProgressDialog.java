@@ -9,10 +9,11 @@ import javax.swing.JProgressBar;
 
 import sk.tomsik68.mclauncher.api.ui.IProgressMonitor;
 
-public class ProgressDialog extends JDialog {
+public class ProgressDialog extends JDialog implements IProgressMonitor {
     private static final long serialVersionUID = 1L;
     private final JProgressBar progressBar;
     private final JLabel lbProgReport;
+    private int max = 100;
 
     public ProgressDialog() {
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -32,6 +33,24 @@ public class ProgressDialog extends JDialog {
         lbProgReport.setText(message);
         repaint();
     }
-    
 
+    @Override
+    public void setProgress(int i) {
+        progressBar.setValue((int) ((1.0 * i / max) * 100.0));
+    }
+
+    @Override
+    public void setMax(int i) {
+        max = i;
+    }
+
+    @Override
+    public void incrementProgress(int i) {
+        setProgress(progressBar.getValue() + ((int) ((1.0 * i / max) * 100)));
+    }
+
+    @Override
+    public void setStatus(String s) {
+        lbProgReport.setText(s);
+    }
 }
