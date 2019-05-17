@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'sk.tomsik68'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation group: 'sk.tomsik68', name: 'mclauncher-api', version: '0.3.3-SNAPSHOT'
+}
+
+mainClassName='sk.tomsik68.oneclickmc.OneClickMCMainFrame'
